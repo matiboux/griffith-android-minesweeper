@@ -4,7 +4,6 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
@@ -22,7 +21,7 @@ public class MineSweeperView extends View {
     private boolean touch; // do we have at least on touch
     */
 
-    private Paint hiddenPaint, discoveredPaint, gridPaint;
+    private Paint coveredPaint, uncoveredPaint, gridPaint;
 
     private boolean[][] cells;
     private int gridSize = 10;
@@ -56,10 +55,10 @@ public class MineSweeperView extends View {
     private void init() {
 
         // Paint objects
-        hiddenPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        hiddenPaint.setColor(Color.BLACK);
-        discoveredPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        discoveredPaint.setColor(Color.GRAY);
+        coveredPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        coveredPaint.setColor(Color.BLACK);
+        uncoveredPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        uncoveredPaint.setColor(Color.GRAY);
         gridPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         gridPaint.setColor(Color.WHITE);
 
@@ -91,6 +90,8 @@ public class MineSweeperView extends View {
         touch = false;
         */
     }
+
+
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
@@ -143,7 +144,7 @@ public class MineSweeperView extends View {
         for (int i = 0; i < gridSize; i++) {
             for (int j = 0; j < gridSize; j++) {
                 // Determine which paint to use
-                Paint fillPaint = cells[i][j] ? discoveredPaint : hiddenPaint;
+                Paint fillPaint = cells[i][j] ? uncoveredPaint : coveredPaint;
 
                 // Draw the cell with the selected paint
                 canvas.drawRect(i * cellWidth, j * cellHeight,
@@ -190,6 +191,7 @@ public class MineSweeperView extends View {
     // user
     @Override
     public boolean onTouchEvent(MotionEvent event) {
+        /*
         if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
             for (int i = 0; i < gridSize; i++) {
                 for (int j = 0; j < gridSize; j++) {
@@ -199,6 +201,21 @@ public class MineSweeperView extends View {
             }
 
             invalidate();
+        }
+        */
+
+        if (event.getActionMasked() == MotionEvent.ACTION_DOWN)
+            return true;
+        else if (event.getActionMasked() == MotionEvent.ACTION_UP) {
+            int cellX = (int) event.getX() / cellWidth;
+            int cellY = (int) event.getY() / cellHeight;
+
+            System.out.println(cellX);
+            System.out.println(cellY);
+
+            cells[cellX][cellY] = true;
+            invalidate();
+            return true;
         }
 
         /*
@@ -272,5 +289,11 @@ public class MineSweeperView extends View {
         // if we get to this point they we have not handled the touch
         // ask the system to handle it instead
         return super.onTouchEvent(event);
+    }
+
+    public void reset() {
+        // Reset the grid
+        cells = new boolean[gridSize][gridSize];
+        invalidate();
     }
 }
