@@ -8,6 +8,7 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 
 // class definition
 public class CustomView extends View {
@@ -47,6 +48,9 @@ public class CustomView extends View {
     // refactored init method as most of this code is shared by all the
     // constructors
     private void init() {
+        //int size = getWidth();
+        //setLayoutParams(new ViewGroup.LayoutParams(size, size));
+
         // create the paint objects for rendering our rectangles
         red = new Paint(Paint.ANTI_ALIAS_FLAG);
         green = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -104,6 +108,17 @@ public class CustomView extends View {
                     (square.right - square.left) >> 1, blue);
             canvas.restore();
         }
+    }
+
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+        int size = 0;
+        int width = getMeasuredWidth();
+        int height = getMeasuredHeight();
+
+        size = Math.min(width, height);
+        setMeasuredDimension(size, size);
     }
 
     // public method that needs to be overridden to handle the touches from a
