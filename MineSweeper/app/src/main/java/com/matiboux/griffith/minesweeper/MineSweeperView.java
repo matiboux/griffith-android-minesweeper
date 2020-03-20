@@ -9,7 +9,7 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
 
-public class CustomView extends View {
+public class MineSweeperView extends View {
     /*
     // private fields that are necessary for rendering the view
     // the colours of our squares
@@ -29,7 +29,7 @@ public class CustomView extends View {
     private int cellWidth, cellHeight;
 
     // default constructor for the class that takes in a context
-    public CustomView(Context c) {
+    public MineSweeperView(Context c) {
         super(c);
         if (!isInEditMode())
             init();
@@ -37,7 +37,7 @@ public class CustomView extends View {
 
     // constructor that takes in a context and also a list of attributes
     // that were set through XML
-    public CustomView(Context c, AttributeSet as) {
+    public MineSweeperView(Context c, AttributeSet as) {
         super(c, as);
         if (!isInEditMode())
             init();
@@ -45,7 +45,7 @@ public class CustomView extends View {
 
     // constructor that take in a context, attribute set and also a default
     // style in case the view is to be styled in a certain way
-    public CustomView(Context c, AttributeSet as, int default_style) {
+    public MineSweeperView(Context c, AttributeSet as, int default_style) {
         super(c, as, default_style);
         if (!isInEditMode())
             init();
