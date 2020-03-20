@@ -2,16 +2,15 @@ package com.matiboux.griffith.minesweeper;
 
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewGroup;
 
-// class definition
 public class CustomView extends View {
+    /*
     // private fields that are necessary for rendering the view
     // the colours of our squares
     private Paint red, green, blue;
@@ -21,6 +20,13 @@ public class CustomView extends View {
     private float touchy[]; // y position of each touch
     private int first; // the first touch to be rendered
     private boolean touch; // do we have at least on touch
+    */
+
+    private Paint hiddenPaint, discoveredPaint, gridPaint;
+
+    private boolean[][] cells;
+    private int gridSize = 10;
+    private int cellWidth, cellHeight;
 
     // default constructor for the class that takes in a context
     public CustomView(Context c) {
@@ -48,9 +54,16 @@ public class CustomView extends View {
     // refactored init method as most of this code is shared by all the
     // constructors
     private void init() {
-        //int size = getWidth();
-        //setLayoutParams(new ViewGroup.LayoutParams(size, size));
 
+        // Paint objects
+        hiddenPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        hiddenPaint.setColor(Color.BLACK);
+        discoveredPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        discoveredPaint.setColor(Color.GRAY);
+        gridPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        gridPaint.setColor(Color.WHITE);
+
+        /*
         // create the paint objects for rendering our rectangles
         red = new Paint(Paint.ANTI_ALIAS_FLAG);
         green = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -76,14 +89,76 @@ public class CustomView extends View {
 
         // we start off with nothing touching the view
         touch = false;
+        */
+    }
+
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+        int size = 0;
+        int width = getMeasuredWidth();
+        int height = getMeasuredHeight();
+
+        size = Math.min(width, height);
+        setMeasuredDimension(size, size);
+    }
+
+    @Override
+    protected void onSizeChanged(int width, int height, int oldWidth, int oldHeight) {
+        super.onSizeChanged(width, height, oldWidth, oldHeight);
+        updateGridDimensions();
+    }
+
+    private void updateGridDimensions() {
+        if (gridSize < 1) gridSize = 1;
+
+        // Calculate the width & height of a cell
+        cellWidth = getWidth() / gridSize;
+        cellHeight = getHeight() / gridSize;
+
+        // Initialize the grid of cells for the game: gridSize × gridSize
+        // According to the Java specifications,
+        // The array is filled with a default value:
+        // For type boolean, the default value is false.
+        // https://docs.oracle.com/javase/specs/jls/se7/html/jls-4.html#jls-4.12.5
+        cells = new boolean[gridSize][gridSize];
+
+        invalidate();
     }
 
     // public method that needs to be overridden to draw the contents of this
     // widget
+    @Override
     public void onDraw(Canvas canvas) {
         // call the superclass method
         super.onDraw(canvas);
 
+        // Black background
+        //canvas.drawColor(Color.BLACK);
+
+        int width = getWidth();
+        int height = getHeight();
+
+        // Draw grid cells
+        for (int i = 0; i < gridSize; i++) {
+            for (int j = 0; j < gridSize; j++) {
+                // Determine which paint to use
+                Paint fillPaint = cells[i][j] ? discoveredPaint : hiddenPaint;
+
+                // Draw the cell with the selected paint
+                canvas.drawRect(i * cellWidth, j * cellHeight,
+                        (i + 1) * cellWidth, (j + 1) * cellHeight,
+                        fillPaint);
+            }
+        }
+
+        // Draw grid lines
+        for (int i = 1; i < gridSize; i++) {
+            canvas.drawLine(i * cellWidth, 0, i * cellWidth, height, gridPaint);
+            canvas.drawLine(0, i * cellHeight, width, i * cellHeight, gridPaint);
+        }
+
+        /*
         // draw the rest of the squares in green to indicate multitouch
         for (int i = 0; i < 16; i++) {
             if (touches[i]) {
@@ -108,22 +183,25 @@ public class CustomView extends View {
                     (square.right - square.left) >> 1, blue);
             canvas.restore();
         }
-    }
-
-    @Override
-    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-        int size = 0;
-        int width = getMeasuredWidth();
-        int height = getMeasuredHeight();
-
-        size = Math.min(width, height);
-        setMeasuredDimension(size, size);
+        */
     }
 
     // public method that needs to be overridden to handle the touches from a
     // user
+    @Override
     public boolean onTouchEvent(MotionEvent event) {
+        if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
+            for (int i = 0; i < gridSize; i++) {
+                for (int j = 0; j < gridSize; j++) {
+                    // Randomly discover a cell
+                    if (Math.random() >= 0.9) cells[i][j] = true;
+                }
+            }
+
+            invalidate();
+        }
+
+        /*
         // determine what kind of touch event we have
         if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
             // this indicates that the user has placed the first finger on the
@@ -189,6 +267,7 @@ public class CustomView extends View {
             invalidate();
             return true;
         }
+        */
 
         // if we get to this point they we have not handled the touch
         // ask the system to handle it instead
