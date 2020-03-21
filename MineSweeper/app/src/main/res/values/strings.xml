@@ -3,4 +3,6 @@
     <string name="button_mode_uncover">Uncover Mode</string>
     <string name="button_mode_marking">Marking Mode</string>
     <string name="button_reset">Reset the Grid</string>
+    <string name="text_total_mines">Total of mines: %d</string>
+    <string name="text_marked_mines">Number of marked mines: %d</string>
 </resources>

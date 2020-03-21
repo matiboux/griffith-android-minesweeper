@@ -28,7 +28,10 @@ public class MineSweeperView extends View {
     private Cell[][] cells;
     private int cellWidth, cellHeight;
     private int gridSize = 10;
-    private int nbMines = 20;
+    private int minesCount = 20;
+
+    private int markedCount;
+    private OnMarkedCountChangeListener onMarkedCountChangeListener;
 
     private MineSweeperMode mode;
     private OnModeChangeListener onModeChangeListener;
@@ -162,8 +165,14 @@ public class MineSweeperView extends View {
                 int cellX = (int) event.getX() / cellWidth;
                 int cellY = (int) event.getY() / cellHeight;
 
-                if (mode == MineSweeperMode.Marking) cells[cellX][cellY].toggleMark();
-                else cells[cellX][cellY].uncover();
+                if (mode != MineSweeperMode.Marking) cells[cellX][cellY].uncover();
+                else {
+                    cells[cellX][cellY].toggleMark();
+
+                    if(cells[cellX][cellY].has(Cell.MARKED)) markedCount++;
+                    else markedCount--;
+                    onMarkedCountChangeListener.onMarkedCountChange(markedCount);
+                }
 
                 invalidate();
                 return true;
@@ -184,7 +193,7 @@ public class MineSweeperView extends View {
         }
 
         // Place mines
-        for (int i = 0; i < nbMines; ) {
+        for (int i = 0; i < minesCount; ) {
             // Generate random coordinates between 0 and (gridSize - 1)
             int randomX = (int) (Math.random() * gridSize);
             int randomY = (int) (Math.random() * gridSize);
@@ -196,6 +205,7 @@ public class MineSweeperView extends View {
         }
 
         // Reset fields
+        markedCount = 0;
         mode = MineSweeperMode.Uncovering;
         gameOver = false;
 
@@ -207,6 +217,10 @@ public class MineSweeperView extends View {
         // Reinitialize the grid
         initializeGrid();
         invalidate(); // Redraw
+    }
+
+    public void setMarkedCountChangeListener(OnMarkedCountChangeListener listener) {
+        onMarkedCountChangeListener = listener;
     }
 
     public void setModeChangeListener(OnModeChangeListener listener) {
@@ -221,6 +235,14 @@ public class MineSweeperView extends View {
 
     public MineSweeperMode getMode() {
         return mode;
+    }
+
+    public int getMinesCount() {
+        return minesCount;
+    }
+
+    public int getMarkedCount() {
+        return markedCount;
     }
 
     public void setGameOverListener(OnGameOverListener listener) {

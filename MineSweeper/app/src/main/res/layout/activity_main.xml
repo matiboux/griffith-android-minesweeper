@@ -32,19 +32,19 @@
     </LinearLayout>
 
     <TextView
-        android:id="@+id/text_view1"
+        android:id="@+id/text_total_mines"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
         android:textAlignment="center"
-        android:text="Hey." />
+        android:text="@string/text_total_mines" />
 
     <TextView
-        android:id="@+id/text_view2"
+        android:id="@+id/text_marked_mines"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
         android:textAlignment="center"
-        android:text="There." />
+        android:text="@string/text_marked_mines" />
 
 </LinearLayout>
