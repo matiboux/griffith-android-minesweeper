@@ -165,13 +165,7 @@ public class MineSweeperView extends View {
                 int cellX = (int) event.getX() / cellWidth;
                 int cellY = (int) event.getY() / cellHeight;
 
-                if (mode != MineSweeperMode.Marking) {
-                    if (!cells[cellX][cellY].has(Cell.UNCOVERED)) {
-                        cells[cellX][cellY].uncover();
-                        if (cells[cellX][cellY].has(Cell.MINEFIELD)) changeState(GameState.Lost);
-                        else cellsLeft--;
-                    }
-                } else {
+                if (mode == MineSweeperMode.Marking) {
                     cells[cellX][cellY].toggleMark();
 
                     if (cells[cellX][cellY].has(Cell.MARKED)) {
@@ -182,6 +176,8 @@ public class MineSweeperView extends View {
                         markedCount--;
                     }
                     onMarkedCountChangeListener.onMarkedCountChange(markedCount);
+                } else {
+                    uncoverCell(cellX, cellY);
                 }
 
                 if (cellsLeft <= 0) changeState(GameState.Won);
@@ -194,6 +190,29 @@ public class MineSweeperView extends View {
         // If we have not handled the touch event, ask the system to do it
         return super.onTouchEvent(event);
 
+    }
+
+    private void uncoverCell(int cellX, int cellY) {
+        if (cells[cellX][cellY].has(Cell.UNCOVERED)) return;
+
+        cells[cellX][cellY].uncover();
+
+        if (cells[cellX][cellY].has(Cell.MINEFIELD)) changeState(GameState.Lost);
+        else {
+            cellsLeft--;
+
+            if (cells[cellX][cellY].getDigit() <= 0) {
+                // Uncover neighbor cells if this cell has no neighbor mine
+                int minX = Math.max(0, cellX - 1);
+                int minY = Math.max(0, cellY - 1);
+                int maxX = Math.min(gridSize - 1, cellX + 1);
+                int maxY = Math.min(gridSize - 1, cellY + 1);
+
+                for (int i = minX; i <= maxX; i++)
+                    for (int j = minY; j <= maxY; j++)
+                        uncoverCell(i, j);
+            }
+        }
     }
 
     private void changeState(GameState newState) {
