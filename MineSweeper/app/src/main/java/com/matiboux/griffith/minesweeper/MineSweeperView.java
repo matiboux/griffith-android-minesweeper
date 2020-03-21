@@ -29,6 +29,9 @@ public class MineSweeperView extends View {
     private int gridSize = 10;
     private int nbMines = 20;
 
+    private boolean gameOver;
+    private OnGameOverListener onGameOverListener;
+
     // default constructor for the class that takes in a context
     public MineSweeperView(Context c) {
         super(c);
@@ -161,6 +164,8 @@ public class MineSweeperView extends View {
 
                 if (cells[i][j].isUncovered() && cells[i][j].isMinefield()) {
                     drawCenterText(canvas, "M", rect, textPaint);
+                    gameOver = true;
+                    onGameOverListener.onGameOver();
                 }
             }
         }
@@ -215,17 +220,18 @@ public class MineSweeperView extends View {
             invalidate();
         }
         */
+        if (!gameOver) {
+            if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
+                return true;
+            } else if (event.getActionMasked() == MotionEvent.ACTION_UP) {
+                // Uncover the cell
+                int cellX = (int) event.getX() / cellWidth;
+                int cellY = (int) event.getY() / cellHeight;
+                cells[cellX][cellY].setUncovered();
 
-        if (event.getActionMasked() == MotionEvent.ACTION_DOWN)
-            return true;
-        else if (event.getActionMasked() == MotionEvent.ACTION_UP) {
-            // Uncover the cell
-            int cellX = (int) event.getX() / cellWidth;
-            int cellY = (int) event.getY() / cellHeight;
-            cells[cellX][cellY].setUncovered();
-
-            invalidate();
-            return true;
+                invalidate();
+                return true;
+            }
         }
 
         /*
@@ -321,12 +327,19 @@ public class MineSweeperView extends View {
             cells[randomX][randomY].setMinefield();
             i++;
         }
+
+        // New game
+        gameOver = false;
     }
 
     public void reset() {
         // Reinitialize the grid & redraw
         initializeGrid();
         invalidate();
+    }
+
+    public void setGameOverListener(OnGameOverListener listener) {
+        onGameOverListener = listener;
     }
 
     private void drawCenterText(Canvas canvas, String text, Rect rect, Paint paint) {
