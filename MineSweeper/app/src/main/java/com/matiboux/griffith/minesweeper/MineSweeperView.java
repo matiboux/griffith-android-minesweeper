@@ -91,6 +91,10 @@ public class MineSweeperView extends View {
         cellWidth = getWidth() / gridSize;
         cellHeight = getHeight() / gridSize;
 
+        // Updated the size of texts
+        textPaint.setTextSize((int) (cellWidth / 10 * 8));
+        winPaint.setTextSize((int) (cellWidth / 10 * 16));
+
         invalidate();
     }
 
