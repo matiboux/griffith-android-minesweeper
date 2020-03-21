@@ -22,12 +22,16 @@ public class MineSweeperView extends View {
     private boolean touch; // do we have at least on touch
     */
 
-    private Paint coveredPaint, uncoveredPaint, minefieldPaint, gridPaint, textPaint;
+    private Paint coveredPaint, uncoveredPaint, markedPaint, minefieldPaint;
+    private Paint gridPaint, textPaint;
 
     private Cell[][] cells;
     private int cellWidth, cellHeight;
     private int gridSize = 10;
     private int nbMines = 20;
+
+    private MineSweeperMode mode;
+    private OnModeChangeListener onModeChangeListener;
 
     private boolean gameOver;
     private OnGameOverListener onGameOverListener;
@@ -35,76 +39,45 @@ public class MineSweeperView extends View {
     // default constructor for the class that takes in a context
     public MineSweeperView(Context c) {
         super(c);
-        if (!isInEditMode())
-            init();
+        if (!isInEditMode()) init();
     }
 
     // constructor that takes in a context and also a list of attributes
     // that were set through XML
     public MineSweeperView(Context c, AttributeSet as) {
         super(c, as);
-        if (!isInEditMode())
-            init();
+        if (!isInEditMode()) init();
     }
 
     // constructor that take in a context, attribute set and also a default
     // style in case the view is to be styled in a certain way
     public MineSweeperView(Context c, AttributeSet as, int default_style) {
         super(c, as, default_style);
-        if (!isInEditMode())
-            init();
+        if (!isInEditMode()) init();
     }
 
-    // refactored init method as most of this code is shared by all the
-    // constructors
+    // refactored init method as most of this code is shared by all the constructors
     private void init() {
-
-        // Initialize the paint objects
+        // Initialize the paint objects for each cell state
         coveredPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         coveredPaint.setColor(Color.BLACK);
         uncoveredPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         uncoveredPaint.setColor(Color.GRAY);
+        markedPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        markedPaint.setColor(Color.YELLOW);
         minefieldPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         minefieldPaint.setColor(Color.RED);
+
+        // Initialize the additional paint objects
         gridPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         gridPaint.setColor(Color.WHITE);
-
         textPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         textPaint.setColor(Color.BLACK);
         textPaint.setTextSize(80);
 
         // Initialize the game board
         initializeGrid();
-
-        /*
-        // create the paint objects for rendering our rectangles
-        red = new Paint(Paint.ANTI_ALIAS_FLAG);
-        green = new Paint(Paint.ANTI_ALIAS_FLAG);
-        blue = new Paint(Paint.ANTI_ALIAS_FLAG);
-        red.setColor(0xFFFF0000);
-        green.setColor(0xFF00FF00);
-        blue.setColor(0xFF0000FF);
-
-        // initialise all the touch arrays to have 16 elements as we know no way to
-        // accurately determine how many pointers the device will handle. 16 is an
-        // overkill value for phones and tablets as it would require a minimum of
-        // four hands on a device to hit that pointer limit
-        touches = new boolean[16];
-        touchx = new float[16];
-        touchy = new float[16];
-
-        // initialise the first square that will be shown at all times
-        touchx[0] = 200.f;
-        touchy[0] = 200.f;
-
-        // initialise the rectangle
-        square = new Rect(-100, -100, 100, 100);
-
-        // we start off with nothing touching the view
-        touch = false;
-        */
     }
-
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
@@ -120,10 +93,7 @@ public class MineSweeperView extends View {
     @Override
     protected void onSizeChanged(int width, int height, int oldWidth, int oldHeight) {
         super.onSizeChanged(width, height, oldWidth, oldHeight);
-        updateGridDimensions();
-    }
 
-    private void updateGridDimensions() {
         // Calculate the width & height of a cell
         cellWidth = getWidth() / gridSize;
         cellHeight = getHeight() / gridSize;
@@ -131,8 +101,7 @@ public class MineSweeperView extends View {
         invalidate();
     }
 
-    // public method that needs to be overridden to draw the contents of this
-    // widget
+    // public method that needs to be overridden to draw the contents of this widget
     @Override
     public void onDraw(Canvas canvas) {
         // call the superclass method
@@ -151,9 +120,11 @@ public class MineSweeperView extends View {
             for (int j = 0; j < gridSize; j++) {
                 // Determine which paint to use
                 Paint fillPaint;
-                if (!cells[i][j].isUncovered()) fillPaint = coveredPaint;
-                else if (cells[i][j].isMinefield()) fillPaint = minefieldPaint;
-                else fillPaint = uncoveredPaint;
+                if (cells[i][j].has(Cell.UNCOVERED)) {
+                    if (cells[i][j].has(Cell.MINEFIELD)) fillPaint = minefieldPaint;
+                    else fillPaint = uncoveredPaint;
+                } else if (cells[i][j].has(Cell.MARKED)) fillPaint = markedPaint;
+                else fillPaint = coveredPaint;
 
                 // Set the rect for the cell
                 rect.set(i * cellWidth, j * cellHeight,
@@ -162,7 +133,8 @@ public class MineSweeperView extends View {
                 // Draw the cell with the selected paint
                 canvas.drawRect(rect, fillPaint);
 
-                if (cells[i][j].isUncovered() && cells[i][j].isMinefield()) {
+                // Draw the text for the minefield if uncovered
+                if (cells[i][j].has(Cell.UNCOVERED, Cell.MINEFIELD)) {
                     drawCenterText(canvas, "M", rect, textPaint);
                     gameOver = true;
                     onGameOverListener.onGameOver();
@@ -176,134 +148,29 @@ public class MineSweeperView extends View {
             canvas.drawLine(0, i * cellHeight, width, i * cellHeight, gridPaint);
         }
 
-        /*
-        // draw the rest of the squares in green to indicate multitouch
-        for (int i = 0; i < 16; i++) {
-            if (touches[i]) {
-                canvas.save();
-                canvas.translate(touchx[i], touchy[i]);
-                if (first == i)
-                    canvas.drawRect(square, red);
-                else
-                    canvas.drawRect(square, green);
-                canvas.restore();
-            }
-        }
-
-        // if there is no touches then just draw a single blue square in the last place
-        if (!touch) {
-            canvas.save();
-            canvas.translate(touchx[first], touchy[first]);
-            //canvas.drawRect(square, blue);
-            canvas.drawCircle(
-                    square.left + ((square.right - square.left) >> 1),
-                    square.top + ((square.bottom - square.top) >> 1),
-                    (square.right - square.left) >> 1, blue);
-            canvas.restore();
-        }
-        */
     }
 
-    // public method that needs to be overridden to handle the touches from a
-    // user
+    // public method that needs to be overridden to handle the touches from a user
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        /*
-        if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
-            for (int i = 0; i < gridSize; i++) {
-                for (int j = 0; j < gridSize; j++) {
-                    // Randomly discover a cell
-                    if (Math.random() >= 0.9) cells[i][j] = true;
-                }
-            }
-
-            invalidate();
-        }
-        */
+        // Handle the touch event only if the game is not over
         if (!gameOver) {
-            if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
-                return true;
-            } else if (event.getActionMasked() == MotionEvent.ACTION_UP) {
+            if (event.getActionMasked() == MotionEvent.ACTION_DOWN)
+                return true; // Listen for the next Action Up event
+            else if (event.getActionMasked() == MotionEvent.ACTION_UP) {
                 // Uncover the cell
                 int cellX = (int) event.getX() / cellWidth;
                 int cellY = (int) event.getY() / cellHeight;
-                cells[cellX][cellY].setUncovered();
+
+                if (mode == MineSweeperMode.Marking) cells[cellX][cellY].toggleMark();
+                else cells[cellX][cellY].uncover();
 
                 invalidate();
                 return true;
             }
         }
 
-        /*
-        // determine what kind of touch event we have
-        if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
-            // this indicates that the user has placed the first finger on the
-            // screen what we will do here is enable the pointer, track its location
-            // and indicate that the user is touching the screen right now
-            // we also take a copy of the pointer id as the initial pointer for this
-            // touch
-            int pointer_id = event.getPointerId(event.getActionIndex());
-            touches[pointer_id] = true;
-            touchx[pointer_id] = event.getX();
-            touchy[pointer_id] = event.getY();
-            touch = true;
-            first = pointer_id;
-            invalidate();
-            return true;
-        } else if (event.getActionMasked() == MotionEvent.ACTION_UP) {
-            // this indicates that the user has removed the last finger from the
-            // screen and has ended all touch events. here we just disable the
-            // last touch.
-            int pointer_id = event.getPointerId(event.getActionIndex());
-            touches[pointer_id] = false;
-            first = pointer_id;
-            touch = false;
-            invalidate();
-            return true;
-        } else if (event.getActionMasked() == MotionEvent.ACTION_MOVE) {
-            // indicates that one or more pointers has been moved. Android for
-            // efficiency will batch multiple move events into one. thus you
-            // have to check to see if all pointers have been moved.
-            for (int i = 0; i < 16; i++) {
-                int pointer_index = event.findPointerIndex(i);
-                if (pointer_index != -1) {
-                    touchx[i] = event.getX(pointer_index);
-                    touchy[i] = event.getY(pointer_index);
-                }
-            }
-            invalidate();
-            return true;
-        } else if (event.getActionMasked() == MotionEvent.ACTION_POINTER_DOWN) {
-            // indicates that a new pointer has been added to the list
-            // here we enable the new pointer and keep track of its position
-            int pointer_id = event.getPointerId(event.getActionIndex());
-            touches[pointer_id] = true;
-            touchx[pointer_id] = event.getX(pointer_id);
-            touchy[pointer_id] = event.getY(pointer_id);
-            invalidate();
-            return true;
-        } else if (event.getActionMasked() == MotionEvent.ACTION_POINTER_UP) {
-            // indicates that a pointer has been removed from the list
-            // note that is is possible for us to lose our initial pointer
-            // in order to maintain some semblance of an active pointer
-            // (this may be needed depending on the application) we set
-            // the earliest pointer to be the new first pointer.
-            int pointer_id = event.getPointerId(event.getActionIndex());
-            touches[pointer_id] = false;
-            if (pointer_id == first) {
-                for (int i = 0; i < 16; i++)
-                    if (touches[i]) {
-                        first = i;
-                        break;
-                    }
-            }
-            invalidate();
-            return true;
-        }
-        */
-
-        // if we get to this point they we have not handled the touch
-        // ask the system to handle it instead
+        // If we have not handled the touch event, ask the system to do it
         return super.onTouchEvent(event);
     }
 
@@ -323,19 +190,37 @@ public class MineSweeperView extends View {
             int randomY = (int) (Math.random() * gridSize);
 
             // Set the cell as a minefield if not already
-            if (cells[randomX][randomY].isMinefield()) continue;
+            if (cells[randomX][randomY].has(Cell.MINEFIELD)) continue;
             cells[randomX][randomY].setMinefield();
             i++;
         }
 
-        // New game
+        // Reset fields
+        mode = MineSweeperMode.Uncovering;
         gameOver = false;
+
+        // Trigger events
+        if (onModeChangeListener != null) onModeChangeListener.onModeChange(mode);
     }
 
     public void reset() {
-        // Reinitialize the grid & redraw
+        // Reinitialize the grid
         initializeGrid();
-        invalidate();
+        invalidate(); // Redraw
+    }
+
+    public void setModeChangeListener(OnModeChangeListener listener) {
+        onModeChangeListener = listener;
+    }
+
+    public void switchMode() {
+        mode = mode == MineSweeperMode.Uncovering
+                ? MineSweeperMode.Marking : MineSweeperMode.Uncovering;
+        onModeChangeListener.onModeChange(mode);
+    }
+
+    public MineSweeperMode getMode() {
+        return mode;
     }
 
     public void setGameOverListener(OnGameOverListener listener) {

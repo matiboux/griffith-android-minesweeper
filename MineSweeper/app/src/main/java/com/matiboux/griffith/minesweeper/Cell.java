@@ -13,28 +13,32 @@ enum CellContent {
 */
 
 public class Cell {
-    private boolean uncovered = false;
-    public boolean minefield = false;
+    public static final int COVERED = 0b000;
+    public static final int UNCOVERED = 0b001;
+    public static final int MARKED = 0b010;
+    public static final int MINEFIELD = 0b100;
 
-    /*
-    public Cell() {
+    private int state = COVERED;
 
+    public void toggleMark() {
+        // Toggle mark if not uncovered
+        if (has(UNCOVERED)) return;
+        state ^= MARKED;
     }
-    */
 
-    public void setUncovered() {
-        this.uncovered = true;
-    }
-
-    public boolean isUncovered() {
-        return this.uncovered;
+    public void uncover() {
+        // Uncover if not marked
+        if (has(MARKED)) return;
+        state |= UNCOVERED;
     }
 
     public void setMinefield() {
-        this.minefield = true;
+        state |= MINEFIELD;
     }
 
-    public boolean isMinefield() {
-        return this.minefield;
+    public boolean has(int... states) {
+        for (int stateFlag : states)
+            if ((state & stateFlag) != stateFlag) return false;
+        return true;
     }
 }
