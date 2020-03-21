@@ -10,18 +10,6 @@ import android.view.MotionEvent;
 import android.view.View;
 
 public class MineSweeperView extends View {
-    /*
-    // private fields that are necessary for rendering the view
-    // the colours of our squares
-    private Paint red, green, blue;
-    private Rect square; // the square itself
-    private boolean touches[]; // which fingers providing input
-    private float touchx[]; // x position of each touch
-    private float touchy[]; // y position of each touch
-    private int first; // the first touch to be rendered
-    private boolean touch; // do we have at least on touch
-    */
-
     private Paint coveredPaint, uncoveredPaint, markedPaint, minefieldPaint;
     private Paint gridPaint, textPaint;
 
@@ -36,8 +24,9 @@ public class MineSweeperView extends View {
     private MineSweeperMode mode;
     private OnModeChangeListener onModeChangeListener;
 
-    private boolean gameOver;
-    private OnGameOverListener onGameOverListener;
+    private GameState state;
+    private int cellsLeft;
+    private OnGameStateChangeListener onGameStateChangeListener;
 
     // default constructor for the class that takes in a context
     public MineSweeperView(Context c) {
@@ -123,11 +112,16 @@ public class MineSweeperView extends View {
             for (int j = 0; j < gridSize; j++) {
                 // Determine which paint to use
                 Paint fillPaint;
-                if (cells[i][j].has(Cell.UNCOVERED)) {
-                    if (cells[i][j].has(Cell.MINEFIELD)) fillPaint = minefieldPaint;
-                    else fillPaint = uncoveredPaint;
-                } else if (cells[i][j].has(Cell.MARKED)) fillPaint = markedPaint;
-                else fillPaint = coveredPaint;
+                if (cells[i][j].has(Cell.MARKED))
+                    fillPaint = markedPaint;
+                else if (state == GameState.Lost && cells[i][j].has(Cell.MINEFIELD))
+                    fillPaint = minefieldPaint; // Display all mines when losing
+                else if (!cells[i][j].has(Cell.UNCOVERED))
+                    fillPaint = coveredPaint;
+                else if (cells[i][j].has(Cell.MINEFIELD))
+                    fillPaint = minefieldPaint;
+                else
+                    fillPaint = uncoveredPaint;
 
                 // Set the rect for the cell
                 rect.set(i * cellWidth, j * cellHeight,
@@ -137,16 +131,16 @@ public class MineSweeperView extends View {
                 canvas.drawRect(rect, fillPaint);
 
                 // Draw the text in the uncovered cell
-                if (cells[i][j].has(Cell.UNCOVERED)) {
-                    if (!cells[i][j].has(Cell.MINEFIELD)) {
-                        int digit = cells[i][j].getDigit();
-                        if (digit > 0)
-                            drawCenterText(canvas, String.valueOf(digit), rect, textPaint);
-                    } else {
+                if (cells[i][j].has(Cell.MINEFIELD)) {
+                    if (state == GameState.Won || cells[i][j].has(Cell.UNCOVERED)
+                            || (state == GameState.Lost && cells[i][j].has(Cell.MARKED)))
                         drawCenterText(canvas, "M", rect, textPaint);
-                        gameOver = true;
-                        onGameOverListener.onGameOver();
-                    }
+                } else if (cells[i][j].has(Cell.UNCOVERED)) {
+                    // Display the number of neighbor mines if any
+                    int digit = cells[i][j].getDigit();
+                    if (digit > 0)
+                        drawCenterText(canvas, String.valueOf(digit), rect, textPaint);
+
                 }
             }
         }
@@ -163,7 +157,7 @@ public class MineSweeperView extends View {
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         // Handle the touch event only if the game is not over
-        if (!gameOver) {
+        if (state == GameState.Playing) {
             if (event.getActionMasked() == MotionEvent.ACTION_DOWN)
                 return true; // Listen for the next Action Up event
             else if (event.getActionMasked() == MotionEvent.ACTION_UP) {
@@ -171,14 +165,26 @@ public class MineSweeperView extends View {
                 int cellX = (int) event.getX() / cellWidth;
                 int cellY = (int) event.getY() / cellHeight;
 
-                if (mode != MineSweeperMode.Marking) cells[cellX][cellY].uncover();
-                else {
+                if (mode != MineSweeperMode.Marking) {
+                    if (!cells[cellX][cellY].has(Cell.UNCOVERED)) {
+                        cells[cellX][cellY].uncover();
+                        if (cells[cellX][cellY].has(Cell.MINEFIELD)) changeState(GameState.Lost);
+                        else cellsLeft--;
+                    }
+                } else {
                     cells[cellX][cellY].toggleMark();
 
-                    if (cells[cellX][cellY].has(Cell.MARKED)) markedCount++;
-                    else markedCount--;
+                    if (cells[cellX][cellY].has(Cell.MARKED)) {
+                        if (cells[cellX][cellY].has(Cell.MINEFIELD)) cellsLeft--;
+                        markedCount++;
+                    } else {
+                        if (cells[cellX][cellY].has(Cell.MINEFIELD)) cellsLeft++;
+                        markedCount--;
+                    }
                     onMarkedCountChangeListener.onMarkedCountChange(markedCount);
                 }
+
+                if (cellsLeft <= 0) changeState(GameState.Won);
 
                 invalidate();
                 return true;
@@ -187,6 +193,12 @@ public class MineSweeperView extends View {
 
         // If we have not handled the touch event, ask the system to do it
         return super.onTouchEvent(event);
+
+    }
+
+    private void changeState(GameState newState) {
+        state = newState;
+        onGameStateChangeListener.onGameStateChange(state);
     }
 
     public void initializeGrid() {
@@ -225,7 +237,8 @@ public class MineSweeperView extends View {
         // Reset fields
         markedCount = 0;
         mode = MineSweeperMode.Uncovering;
-        gameOver = false;
+        state = GameState.Playing;
+        cellsLeft = gridSize * gridSize;
 
         // Trigger events
         if (onModeChangeListener != null) onModeChangeListener.onModeChange(mode);
@@ -263,8 +276,8 @@ public class MineSweeperView extends View {
         return markedCount;
     }
 
-    public void setGameOverListener(OnGameOverListener listener) {
-        onGameOverListener = listener;
+    public void setGameStateChangeListener(OnGameStateChangeListener listener) {
+        onGameStateChangeListener = listener;
     }
 
     private void drawCenterText(Canvas canvas, String text, Rect rect, Paint paint) {

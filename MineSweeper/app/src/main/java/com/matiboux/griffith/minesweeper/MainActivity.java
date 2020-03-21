@@ -24,7 +24,7 @@ public class MainActivity extends AppCompatActivity {
 
         // Components
         mineSweeperView = findViewById(R.id.mine_sweeper_view);
-            btnMode = findViewById(R.id.button_mode);
+        btnMode = findViewById(R.id.button_mode);
         btnReset = findViewById(R.id.button_reset);
         txvTotalMines = findViewById(R.id.text_total_mines);
         txvMarkedMines = findViewById(R.id.text_marked_mines);
@@ -52,13 +52,21 @@ public class MainActivity extends AppCompatActivity {
                 updateBtnModeText(mode);
             }
         });
-        mineSweeperView.setGameOverListener(new OnGameOverListener() {
+        mineSweeperView.setGameStateChangeListener(new OnGameStateChangeListener() {
             @Override
-            public void onGameOver() {
-                // Highlight the reset button when the game is over
-                btnReset.getBackground().setColorFilter(Color.RED, PorterDuff.Mode.MULTIPLY);
+            public void onGameStateChange(GameState state) {
+                if (state == GameState.Lost) {
+                    // Highlight the reset button when the game is over
+                    btnReset.getBackground().setColorFilter(Color.RED, PorterDuff.Mode.MULTIPLY);
+                } else if (state == GameState.Won) {
+                    // Highlight the reset button when the game is over
+                    btnReset.getBackground().setColorFilter(Color.GREEN, PorterDuff.Mode.MULTIPLY);
+                } else {
+                    btnReset.getBackground().clearColorFilter();
+                }
             }
         });
+
 
         btnMode.setOnClickListener(new View.OnClickListener() {
             @Override
