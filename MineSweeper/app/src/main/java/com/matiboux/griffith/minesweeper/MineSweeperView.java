@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
@@ -21,11 +22,12 @@ public class MineSweeperView extends View {
     private boolean touch; // do we have at least on touch
     */
 
-    private Paint coveredPaint, uncoveredPaint, gridPaint;
+    private Paint coveredPaint, uncoveredPaint, minefieldPaint, gridPaint, textPaint;
 
-    private boolean[][] cells;
-    private int gridSize = 10;
+    private Cell[][] cells;
     private int cellWidth, cellHeight;
+    private int gridSize = 10;
+    private int nbMines = 20;
 
     // default constructor for the class that takes in a context
     public MineSweeperView(Context c) {
@@ -54,13 +56,22 @@ public class MineSweeperView extends View {
     // constructors
     private void init() {
 
-        // Paint objects
+        // Initialize the paint objects
         coveredPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         coveredPaint.setColor(Color.BLACK);
         uncoveredPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         uncoveredPaint.setColor(Color.GRAY);
+        minefieldPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        minefieldPaint.setColor(Color.RED);
         gridPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         gridPaint.setColor(Color.WHITE);
+
+        textPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        textPaint.setColor(Color.BLACK);
+        textPaint.setTextSize(80);
+
+        // Initialize the game board
+        initializeGrid();
 
         /*
         // create the paint objects for rendering our rectangles
@@ -92,7 +103,6 @@ public class MineSweeperView extends View {
     }
 
 
-
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
@@ -111,18 +121,9 @@ public class MineSweeperView extends View {
     }
 
     private void updateGridDimensions() {
-        if (gridSize < 1) gridSize = 1;
-
         // Calculate the width & height of a cell
         cellWidth = getWidth() / gridSize;
         cellHeight = getHeight() / gridSize;
-
-        // Initialize the grid of cells for the game: gridSize × gridSize
-        // According to the Java specifications,
-        // The array is filled with a default value:
-        // For type boolean, the default value is false.
-        // https://docs.oracle.com/javase/specs/jls/se7/html/jls-4.html#jls-4.12.5
-        cells = new boolean[gridSize][gridSize];
 
         invalidate();
     }
@@ -140,16 +141,27 @@ public class MineSweeperView extends View {
         int width = getWidth();
         int height = getHeight();
 
+        Rect rect = new Rect();
+
         // Draw grid cells
         for (int i = 0; i < gridSize; i++) {
             for (int j = 0; j < gridSize; j++) {
                 // Determine which paint to use
-                Paint fillPaint = cells[i][j] ? uncoveredPaint : coveredPaint;
+                Paint fillPaint;
+                if (!cells[i][j].isUncovered()) fillPaint = coveredPaint;
+                else if (cells[i][j].isMinefield()) fillPaint = minefieldPaint;
+                else fillPaint = uncoveredPaint;
+
+                // Set the rect for the cell
+                rect.set(i * cellWidth, j * cellHeight,
+                        (i + 1) * cellWidth, (j + 1) * cellHeight);
 
                 // Draw the cell with the selected paint
-                canvas.drawRect(i * cellWidth, j * cellHeight,
-                        (i + 1) * cellWidth, (j + 1) * cellHeight,
-                        fillPaint);
+                canvas.drawRect(rect, fillPaint);
+
+                if (cells[i][j].isUncovered() && cells[i][j].isMinefield()) {
+                    drawCenterText(canvas, "M", rect, textPaint);
+                }
             }
         }
 
@@ -207,13 +219,11 @@ public class MineSweeperView extends View {
         if (event.getActionMasked() == MotionEvent.ACTION_DOWN)
             return true;
         else if (event.getActionMasked() == MotionEvent.ACTION_UP) {
+            // Uncover the cell
             int cellX = (int) event.getX() / cellWidth;
             int cellY = (int) event.getY() / cellHeight;
+            cells[cellX][cellY].setUncovered();
 
-            System.out.println(cellX);
-            System.out.println(cellY);
-
-            cells[cellX][cellY] = true;
             invalidate();
             return true;
         }
@@ -291,9 +301,47 @@ public class MineSweeperView extends View {
         return super.onTouchEvent(event);
     }
 
+    public void initializeGrid() {
+        // Initialize the grid matrix
+        cells = new Cell[gridSize][gridSize];
+        for (int i = 0; i < gridSize; i++) {
+            for (int j = 0; j < gridSize; j++) {
+                cells[i][j] = new Cell();
+            }
+        }
+
+        // Place mines
+        for (int i = 0; i < nbMines; ) {
+            // Generate random coordinates between 0 and (gridSize - 1)
+            int randomX = (int) (Math.random() * gridSize);
+            int randomY = (int) (Math.random() * gridSize);
+
+            // Set the cell as a minefield if not already
+            if (cells[randomX][randomY].isMinefield()) continue;
+            cells[randomX][randomY].setMinefield();
+            i++;
+        }
+    }
+
     public void reset() {
-        // Reset the grid
-        cells = new boolean[gridSize][gridSize];
+        // Reinitialize the grid & redraw
+        initializeGrid();
         invalidate();
+    }
+
+    private void drawCenterText(Canvas canvas, String text, Rect rect, Paint paint) {
+        //paint.setTextAlign(Paint.Align.LEFT);
+
+        // Get center of the space
+        float centerX = rect.left + rect.width() / 2f;
+        float centerY = rect.top + rect.height() / 2f;
+
+        // Reuse rect to get the size of the text
+        paint.getTextBounds(text, 0, text.length(), rect);
+
+        // Compute coordinates for the text & Draw the text
+        float x = centerX - rect.width() / 2f - rect.left;
+        float y = centerY + rect.height() / 2f - rect.bottom;
+        canvas.drawText(text, x, y, paint);
     }
 }
