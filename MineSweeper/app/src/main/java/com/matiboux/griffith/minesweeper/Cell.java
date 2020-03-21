@@ -1,16 +1,6 @@
 package com.matiboux.griffith.minesweeper;
 
-/*
-enum CellState {
-    Covered,
-    Uncovered
-}
-
-enum CellContent {
-    Empty,
-    Mined
-}
-*/
+import androidx.annotation.NonNull;
 
 public class Cell {
     public static final int COVERED = 0b000;
@@ -19,6 +9,7 @@ public class Cell {
     public static final int MINEFIELD = 0b100;
 
     private int state = COVERED;
+    private int digit = 0;
 
     public void toggleMark() {
         // Toggle mark if not uncovered
@@ -40,5 +31,13 @@ public class Cell {
         for (int stateFlag : states)
             if ((state & stateFlag) != stateFlag) return false;
         return true;
+    }
+
+    public int getDigit() {
+        return digit;
+    }
+
+    public void registerNeighbourMine() {
+        digit++;
     }
 }

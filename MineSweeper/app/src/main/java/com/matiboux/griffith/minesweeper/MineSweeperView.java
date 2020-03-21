@@ -136,11 +136,17 @@ public class MineSweeperView extends View {
                 // Draw the cell with the selected paint
                 canvas.drawRect(rect, fillPaint);
 
-                // Draw the text for the minefield if uncovered
-                if (cells[i][j].has(Cell.UNCOVERED, Cell.MINEFIELD)) {
-                    drawCenterText(canvas, "M", rect, textPaint);
-                    gameOver = true;
-                    onGameOverListener.onGameOver();
+                // Draw the text in the uncovered cell
+                if (cells[i][j].has(Cell.UNCOVERED)) {
+                    if (!cells[i][j].has(Cell.MINEFIELD)) {
+                        int digit = cells[i][j].getDigit();
+                        if (digit > 0)
+                            drawCenterText(canvas, String.valueOf(digit), rect, textPaint);
+                    } else {
+                        drawCenterText(canvas, "M", rect, textPaint);
+                        gameOver = true;
+                        onGameOverListener.onGameOver();
+                    }
                 }
             }
         }
@@ -169,7 +175,7 @@ public class MineSweeperView extends View {
                 else {
                     cells[cellX][cellY].toggleMark();
 
-                    if(cells[cellX][cellY].has(Cell.MARKED)) markedCount++;
+                    if (cells[cellX][cellY].has(Cell.MARKED)) markedCount++;
                     else markedCount--;
                     onMarkedCountChangeListener.onMarkedCountChange(markedCount);
                 }
@@ -193,7 +199,7 @@ public class MineSweeperView extends View {
         }
 
         // Place mines
-        for (int i = 0; i < minesCount; ) {
+        for (int k = 0; k < minesCount; ) {
             // Generate random coordinates between 0 and (gridSize - 1)
             int randomX = (int) (Math.random() * gridSize);
             int randomY = (int) (Math.random() * gridSize);
@@ -201,7 +207,19 @@ public class MineSweeperView extends View {
             // Set the cell as a minefield if not already
             if (cells[randomX][randomY].has(Cell.MINEFIELD)) continue;
             cells[randomX][randomY].setMinefield();
-            i++;
+
+            // Register this mine to neighbour cells
+            int minX = Math.max(0, randomX - 1);
+            int minY = Math.max(0, randomY - 1);
+            int maxX = Math.min(gridSize - 1, randomX + 1);
+            int maxY = Math.min(gridSize - 1, randomY + 1);
+            for (int i = minX; i <= maxX; i++) {
+                for (int j = minY; j <= maxY; j++) {
+                    cells[i][j].registerNeighbourMine();
+                }
+            }
+
+            k++; // Next mine
         }
 
         // Reset fields
