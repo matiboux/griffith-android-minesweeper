@@ -11,7 +11,7 @@ import android.view.View;
 
 public class MineSweeperView extends View {
     private Paint coveredPaint, uncoveredPaint, markedPaint, minefieldPaint;
-    private Paint gridPaint, textPaint;
+    private Paint gridPaint, textPaint, winPaint;
 
     private Cell[][] cells;
     private int cellWidth, cellHeight;
@@ -65,7 +65,8 @@ public class MineSweeperView extends View {
         gridPaint.setColor(Color.WHITE);
         textPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         textPaint.setColor(Color.BLACK);
-        textPaint.setTextSize(80);
+        winPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        winPaint.setColor(Color.GREEN);
 
         // Initialize the game board
         initializeGrid();
@@ -140,7 +141,6 @@ public class MineSweeperView extends View {
                     int digit = cells[i][j].getDigit();
                     if (digit > 0)
                         drawCenterText(canvas, String.valueOf(digit), rect, textPaint);
-
                 }
             }
         }
@@ -151,6 +151,10 @@ public class MineSweeperView extends View {
             canvas.drawLine(0, i * cellHeight, width, i * cellHeight, gridPaint);
         }
 
+        if (state == GameState.Won) {
+            canvas.getClipBounds(rect); // Get the canvas dimensions
+            drawCenterText(canvas, "Victory!", rect, winPaint);
+        }
     }
 
     // public method that needs to be overridden to handle the touches from a user
@@ -165,20 +169,11 @@ public class MineSweeperView extends View {
                 int cellX = (int) event.getX() / cellWidth;
                 int cellY = (int) event.getY() / cellHeight;
 
-                if (mode == MineSweeperMode.Marking) {
-                    cells[cellX][cellY].toggleMark();
+                if (cellX < 0 || cellY < 0) return true;
 
-                    if (cells[cellX][cellY].has(Cell.MARKED)) {
-                        if (cells[cellX][cellY].has(Cell.MINEFIELD)) cellsLeft--;
-                        markedCount++;
-                    } else {
-                        if (cells[cellX][cellY].has(Cell.MINEFIELD)) cellsLeft++;
-                        markedCount--;
-                    }
-                    onMarkedCountChangeListener.onMarkedCountChange(markedCount);
-                } else {
-                    uncoverCell(cellX, cellY);
-                }
+                if (mode != MineSweeperMode.Marking) uncoverCell(cellX, cellY);
+                else markCell(cellX, cellY);
+
 
                 if (cellsLeft <= 0) changeState(GameState.Won);
 
@@ -189,11 +184,11 @@ public class MineSweeperView extends View {
 
         // If we have not handled the touch event, ask the system to do it
         return super.onTouchEvent(event);
-
     }
 
     private void uncoverCell(int cellX, int cellY) {
-        if (cells[cellX][cellY].has(Cell.UNCOVERED)) return;
+        if (cells[cellX][cellY].has(Cell.UNCOVERED)
+                || cells[cellX][cellY].has(Cell.MARKED)) return;
 
         cells[cellX][cellY].uncover();
 
@@ -213,6 +208,19 @@ public class MineSweeperView extends View {
                         uncoverCell(i, j);
             }
         }
+    }
+
+    private void markCell(int cellX, int cellY) {
+        cells[cellX][cellY].toggleMark();
+
+        if (cells[cellX][cellY].has(Cell.MARKED)) {
+            if (cells[cellX][cellY].has(Cell.MINEFIELD)) cellsLeft--;
+            markedCount++;
+        } else {
+            if (cells[cellX][cellY].has(Cell.MINEFIELD)) cellsLeft++;
+            markedCount--;
+        }
+        onMarkedCountChangeListener.onMarkedCountChange(markedCount);
     }
 
     private void changeState(GameState newState) {
