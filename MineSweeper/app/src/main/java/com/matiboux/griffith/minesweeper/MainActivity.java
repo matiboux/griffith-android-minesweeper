@@ -24,7 +24,7 @@ public class MainActivity extends AppCompatActivity {
 
         // Components
         mineSweeperView = findViewById(R.id.mine_sweeper_view);
-        btnMode = findViewById(R.id.button_mode);
+            btnMode = findViewById(R.id.button_mode);
         btnReset = findViewById(R.id.button_reset);
         txvTotalMines = findViewById(R.id.text_total_mines);
         txvMarkedMines = findViewById(R.id.text_marked_mines);
@@ -81,7 +81,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void updateBtnModeText(MineSweeperMode mode) {
-        if (mode == MineSweeperMode.Marking) btnMode.setText(R.string.button_mode_marking);
-        else btnMode.setText(R.string.button_mode_uncover);
+        if (mode == MineSweeperMode.Marking) {
+            btnMode.setText(R.string.button_mode_marking);
+            btnMode.getBackground().setColorFilter(Color.YELLOW, PorterDuff.Mode.MULTIPLY);
+        } else {
+            btnMode.setText(R.string.button_mode_uncover);
+            btnMode.getBackground().clearColorFilter();
+        }
     }
 }
