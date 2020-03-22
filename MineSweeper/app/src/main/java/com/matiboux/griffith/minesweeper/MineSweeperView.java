@@ -10,6 +10,8 @@ import android.view.MotionEvent;
 import android.view.View;
 
 public class MineSweeperView extends View {
+    private Context context;
+
     private Paint coveredPaint, uncoveredPaint, markedPaint, minefieldPaint;
     private Paint gridPaint, textPaint;
     private Paint lostPaint, wonPaint, strokePaint;
@@ -51,6 +53,9 @@ public class MineSweeperView extends View {
 
     // refactored init method as most of this code is shared by all the constructors
     private void init() {
+        // Get the current context
+        context = getContext();
+
         // Cell State Paint objects
         coveredPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         coveredPaint.setColor(Color.BLACK);
@@ -169,10 +174,10 @@ public class MineSweeperView extends View {
 
         if (state == GameState.Lost) {
             canvas.getClipBounds(rect); // Get the canvas dimensions
-            drawCenterText(canvas, "Game Over.", rect, lostPaint, strokePaint);
+            drawCenterText(canvas, context.getString(R.string.defeat_text), rect, lostPaint, strokePaint);
         } else if (state == GameState.Won) {
             canvas.getClipBounds(rect); // Get the canvas dimensions
-            drawCenterText(canvas, "Victory!", rect, wonPaint, strokePaint);
+            drawCenterText(canvas, context.getString(R.string.victory_text), rect, wonPaint, strokePaint);
         }
     }
 

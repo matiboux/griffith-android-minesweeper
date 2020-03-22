@@ -6,6 +6,8 @@
     <string name="button_reset">Reset the Grid</string>
     <string name="text_total_mines">Total of mines: %d</string>
     <string name="text_marked_mines">Number of marked mines: %d</string>
+    <string name="defeat_text">Game Lost.</string>
+    <string name="victory_text">Victory!</string>
 
     <!-- About -->
     <string name="about_title">About</string>

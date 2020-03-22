@@ -16,4 +16,6 @@
         "Projet à Griffith College dans le cadre du module de Dévelopement Mobile.\n"
         "https://gcd.ie/"
     </string>
+    <string name="victory_text">Victoire !</string>
+    <string name="defeat_text">Défaite.</string>
 </resources>
