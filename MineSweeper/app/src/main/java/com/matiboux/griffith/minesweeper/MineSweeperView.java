@@ -11,7 +11,8 @@ import android.view.View;
 
 public class MineSweeperView extends View {
     private Paint coveredPaint, uncoveredPaint, markedPaint, minefieldPaint;
-    private Paint gridPaint, textPaint, winPaint;
+    private Paint gridPaint, textPaint;
+    private Paint lostPaint, wonPaint, strokePaint;
 
     private Cell[][] cells;
     private int cellWidth, cellHeight;
@@ -50,7 +51,7 @@ public class MineSweeperView extends View {
 
     // refactored init method as most of this code is shared by all the constructors
     private void init() {
-        // Initialize the paint objects for each cell state
+        // Cell State Paint objects
         coveredPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         coveredPaint.setColor(Color.BLACK);
         uncoveredPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -60,13 +61,21 @@ public class MineSweeperView extends View {
         minefieldPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         minefieldPaint.setColor(Color.RED);
 
-        // Initialize the additional paint objects
+        // Grid Paint objects
         gridPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         gridPaint.setColor(Color.WHITE);
         textPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         textPaint.setColor(Color.BLACK);
-        winPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        winPaint.setColor(Color.GREEN);
+
+        // Game Over Paint objects
+        lostPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        lostPaint.setColor(Color.RED);
+        wonPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        wonPaint.setColor(Color.GREEN);
+        strokePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        strokePaint.setStyle(Paint.Style.STROKE);
+        strokePaint.setStrokeWidth(10);
+        strokePaint.setColor(Color.BLACK);
 
         // Initialize the game board
         initializeGrid();
@@ -93,7 +102,10 @@ public class MineSweeperView extends View {
 
         // Updated the size of texts
         textPaint.setTextSize((int) (cellWidth / 10 * 8));
-        winPaint.setTextSize((int) (cellWidth / 10 * 16));
+        int gameOverTextSize = cellWidth / 10 * 16;
+        wonPaint.setTextSize(gameOverTextSize);
+        lostPaint.setTextSize(gameOverTextSize);
+        strokePaint.setTextSize(gameOverTextSize);
 
         invalidate();
     }
@@ -155,9 +167,12 @@ public class MineSweeperView extends View {
             canvas.drawLine(0, i * cellHeight, width, i * cellHeight, gridPaint);
         }
 
-        if (state == GameState.Won) {
+        if (state == GameState.Lost) {
             canvas.getClipBounds(rect); // Get the canvas dimensions
-            drawCenterText(canvas, "Victory!", rect, winPaint);
+            drawCenterText(canvas, "Game Over.", rect, lostPaint, strokePaint);
+        } else if (state == GameState.Won) {
+            canvas.getClipBounds(rect); // Get the canvas dimensions
+            drawCenterText(canvas, "Victory!", rect, wonPaint, strokePaint);
         }
     }
 
@@ -177,7 +192,6 @@ public class MineSweeperView extends View {
 
                 if (mode != MineSweeperMode.Marking) uncoverCell(cellX, cellY);
                 else markCell(cellX, cellY);
-
 
                 if (cellsLeft <= 0) changeState(GameState.Won);
 
@@ -325,5 +339,11 @@ public class MineSweeperView extends View {
         float x = centerX - rect.width() / 2f - rect.left;
         float y = centerY + rect.height() / 2f - rect.bottom;
         canvas.drawText(text, x, y, paint);
+    }
+
+    private void drawCenterText(Canvas canvas, String text, Rect rect, Paint textPaint, Paint strokePaint) {
+        // Using a copy of rect for the first call so that the second call use the same initial rect
+        drawCenterText(canvas, text, new Rect(rect), strokePaint);
+        drawCenterText(canvas, text, rect, textPaint);
     }
 }
