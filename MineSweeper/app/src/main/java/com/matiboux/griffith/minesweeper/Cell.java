@@ -12,14 +12,10 @@ public class Cell {
     private int digit = 0;
 
     public void toggleMark() {
-        // Toggle mark if not uncovered
-        if (has(UNCOVERED)) return;
         state ^= MARKED;
     }
 
     public void uncover() {
-        // Uncover if not marked
-        if (has(MARKED)) return;
         state |= UNCOVERED;
     }
 

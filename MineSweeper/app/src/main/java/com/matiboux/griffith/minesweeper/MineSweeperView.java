@@ -190,8 +190,8 @@ public class MineSweeperView extends View {
 
                 if (cellX < 0 || cellY < 0) return true;
 
-                if (mode != MineSweeperMode.Marking) uncoverCell(cellX, cellY);
-                else markCell(cellX, cellY);
+                if (mode == MineSweeperMode.Marking) markCell(cellX, cellY);
+                else uncoverCell(cellX, cellY);
 
                 if (cellsLeft <= 0) changeState(GameState.Won);
 
@@ -229,6 +229,8 @@ public class MineSweeperView extends View {
     }
 
     private void markCell(int cellX, int cellY) {
+        if (cells[cellX][cellY].has(Cell.UNCOVERED)) return;
+
         cells[cellX][cellY].toggleMark();
 
         if (cells[cellX][cellY].has(Cell.MARKED)) {
