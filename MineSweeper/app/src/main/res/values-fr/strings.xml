@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Main Activity -->
+    <string name="button_mode_uncover">Mode de découverte</string>
+    <string name="button_mode_marking">Mode de marquage</string>
+    <string name="button_reset">Réinitialiser la grille</string>
+    <string name="text_total_mines">Total de mines : %d</string>
+    <string name="text_marked_mines">Nombre de mines marquées : %d</string>
+
+    <!-- About -->
+    <string name="about_title">À propos</string>
+    <string name="about_text">
+        "MineSweeper par Matiboux.\n"
+        "http://matiboux.me/\n\n"
+
+        "Projet à Griffith College dans le cadre du module de Dévelopement Mobile.\n"
+        "https://gcd.ie/"
+    </string>
+</resources>
