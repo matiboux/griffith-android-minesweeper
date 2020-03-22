@@ -1,8 +1,21 @@
 <resources>
+    <!-- Main Activity -->
     <string name="app_name">MineSweeper</string>
     <string name="button_mode_uncover">Uncover Mode</string>
     <string name="button_mode_marking">Marking Mode</string>
     <string name="button_reset">Reset the Grid</string>
     <string name="text_total_mines">Total of mines: %d</string>
     <string name="text_marked_mines">Number of marked mines: %d</string>
+
+    <!-- About -->
+    <string name="about_title">About</string>
+    <string name="about_text">
+        "MineSweeper app by Matiboux.\n"
+        "http://matiboux.me/\n\n"
+
+        "Project assignment at Griffith College for the Mobile Development module.\n"
+        "https://gcd.ie/"
+    </string>
+    <string name="tap_picture_to_edit">Tap the picture to select a new one</string>
+
 </resources>
