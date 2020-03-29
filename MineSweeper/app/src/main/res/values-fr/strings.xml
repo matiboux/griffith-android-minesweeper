@@ -18,4 +18,7 @@
     </string>
     <string name="victory_text">Victoire !</string>
     <string name="defeat_text">Défaite.</string>
+    <string name="settings_title">Paramètres</string>
+    <string name="languages_header">Langues</string>
+    <string name="languages_title">Langue d\'affichage</string>
 </resources>

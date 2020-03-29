@@ -23,11 +23,14 @@ public class About extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == android.R.id.home) {
-            // Up/Home button
-            super.onBackPressed();
-            return true;
+        // Handle action bar item clicks
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                // Up/Home button
+                super.onBackPressed();
+                return true;
         }
+
         return super.onOptionsItemSelected(item);
     }
 }

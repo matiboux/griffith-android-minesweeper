@@ -1,6 +1,7 @@
 package com.matiboux.griffith.minesweeper;
 
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.os.Bundle;
@@ -9,10 +10,15 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 public class MainActivity extends AppCompatActivity {
+
+    private static final int ASK_FOR_RECREATE = 1;
 
     private MineSweeperView mineSweeperView;
     private Button btnMode;
@@ -100,18 +106,30 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        if (id == R.id.action_about) {
-            // Move to About Activity
-            startActivity(new Intent(this, About.class));
-            return true;
+        // Handle action bar item clicks
+        switch (item.getItemId()) {
+            case R.id.action_settings:
+                // Move to Settings Activity
+                startActivityForResult(new Intent(this, Settings.class), ASK_FOR_RECREATE);
+                return true;
+            case R.id.action_about:
+                // Move to About Activity
+                startActivity(new Intent(this, About.class));
+                return true;
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        // Check which request we're responding to
+        if (requestCode == ASK_FOR_RECREATE)
+            // Make sure the request was successful
+            if (resultCode == RESULT_OK)
+                recreate();
+
+        super.onActivityResult(requestCode, resultCode, data);
     }
 
     private void updateBtnModeText(MineSweeperMode mode) {

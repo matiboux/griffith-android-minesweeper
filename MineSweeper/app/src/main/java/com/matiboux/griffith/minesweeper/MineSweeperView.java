@@ -193,7 +193,7 @@ public class MineSweeperView extends View {
                 int cellX = (int) event.getX() / cellWidth;
                 int cellY = (int) event.getY() / cellHeight;
 
-                if (cellX < 0 || cellY < 0) return true;
+                if (cellX < 0 || cellX >= gridSize || cellY < 0 || cellY >= gridSize) return true;
 
                 if (mode == MineSweeperMode.Marking) markCell(cellX, cellY);
                 else uncoverCell(cellX, cellY);

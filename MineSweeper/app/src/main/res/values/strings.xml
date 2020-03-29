@@ -9,6 +9,11 @@
     <string name="defeat_text">Game Lost.</string>
     <string name="victory_text">Victory!</string>
 
+    <!-- Settings -->
+    <string name="settings_title">Settings</string>
+    <string name="languages_header">Languages</string>
+    <string name="languages_title">Display language</string>
+
     <!-- About -->
     <string name="about_title">About</string>
     <string name="about_text">

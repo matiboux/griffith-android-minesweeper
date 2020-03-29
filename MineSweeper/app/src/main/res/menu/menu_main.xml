@@ -4,6 +4,10 @@
     tools:context="com.matiboux.griffith.contactmanager.MainActivity">
 
     <item
+        android:id="@+id/action_settings"
+        android:title="@string/settings_title"
+        app:showAsAction="ifRoom" />
+    <item
         android:id="@+id/action_about"
         android:title="@string/about_title"
         app:showAsAction="ifRoom" />
