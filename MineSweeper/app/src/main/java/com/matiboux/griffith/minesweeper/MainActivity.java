@@ -1,7 +1,6 @@
 package com.matiboux.griffith.minesweeper;
 
 import android.content.Intent;
-import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.os.Bundle;
@@ -10,9 +9,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -23,6 +20,7 @@ public class MainActivity extends AppCompatActivity {
     private MineSweeperView mineSweeperView;
     private Button btnMode;
     private Button btnReset;
+    private Button btnAI;
     private TextView txvTotalMines;
     private TextView txvMarkedMines;
 
@@ -35,6 +33,7 @@ public class MainActivity extends AppCompatActivity {
         mineSweeperView = findViewById(R.id.mine_sweeper_view);
         btnMode = findViewById(R.id.button_mode);
         btnReset = findViewById(R.id.button_reset);
+        btnAI = findViewById(R.id.button_ai);
         txvTotalMines = findViewById(R.id.text_total_mines);
         txvMarkedMines = findViewById(R.id.text_marked_mines);
 
@@ -44,6 +43,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void updateFields() {
         updateBtnModeText(mineSweeperView.getMode());
+        updateBtnAIText(mineSweeperView.getAIMode());
         txvTotalMines.setText(getString(R.string.text_total_mines, mineSweeperView.getMinesCount()));
         txvMarkedMines.setText(getString(R.string.text_marked_mines, mineSweeperView.getMarkedCount()));
     }
@@ -75,14 +75,18 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
-
+        mineSweeperView.setAIModeChangeListener(new OnModeChangeListener() {
+            @Override
+            public void onModeChange(GameAIMode mode) {
+                updateBtnAIText(mode);
+            }
+        });
 
         btnMode.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 // Switch between modes
                 mineSweeperView.switchMode();
-                updateBtnModeText(mineSweeperView.getMode());
             }
         });
 
@@ -93,6 +97,15 @@ public class MainActivity extends AppCompatActivity {
                 mineSweeperView.reset();
                 btnReset.getBackground().clearColorFilter();
                 updateFields();
+            }
+        });
+
+
+        btnAI.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Switch between modes
+                mineSweeperView.switchAIMode();
             }
         });
     }
@@ -132,13 +145,33 @@ public class MainActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
     }
 
-    private void updateBtnModeText(MineSweeperMode mode) {
-        if (mode == MineSweeperMode.Marking) {
-            btnMode.setText(R.string.button_mode_marking);
-            btnMode.getBackground().setColorFilter(Color.YELLOW, PorterDuff.Mode.MULTIPLY);
-        } else {
-            btnMode.setText(R.string.button_mode_uncover);
-            btnMode.getBackground().clearColorFilter();
-        }
+    private void updateBtnModeText(final MineSweeperMode mode) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if (mode == MineSweeperMode.Marking) {
+                    btnMode.setText(R.string.button_mode_marking);
+                    btnMode.getBackground().setColorFilter(Color.YELLOW, PorterDuff.Mode.MULTIPLY);
+                } else {
+                    btnMode.setText(R.string.button_mode_uncover);
+                    btnMode.getBackground().clearColorFilter();
+                }
+            }
+        });
+    }
+
+    private void updateBtnAIText(final GameAIMode mode) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if (mode == GameAIMode.Enabled) {
+                    btnAI.setText(R.string.button_ai_enabled);
+                    btnAI.getBackground().setColorFilter(Color.GRAY, PorterDuff.Mode.MULTIPLY);
+                } else {
+                    btnAI.setText(R.string.button_ai_disabled);
+                    btnAI.getBackground().clearColorFilter();
+                }
+            }
+        });
     }
 }

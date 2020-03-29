@@ -1,5 +1,9 @@
 package com.matiboux.griffith.minesweeper;
 
-public interface OnModeChangeListener {
-    void onModeChange(MineSweeperMode mode);
+public abstract class OnModeChangeListener {
+    void onModeChange(MineSweeperMode mode) {
+    }
+
+    void onModeChange(GameAIMode mode) {
+    }
 }

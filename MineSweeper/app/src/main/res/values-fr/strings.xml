@@ -21,4 +21,6 @@
     <string name="settings_title">Paramètres</string>
     <string name="languages_header">Langues</string>
     <string name="languages_title">Langue d\'affichage</string>
+    <string name="button_ai_enabled">IA activée</string>
+    <string name="button_ai_disabled">IA désactivée</string>
 </resources>

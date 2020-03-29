@@ -9,6 +9,8 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
 
+import java.util.ArrayList;
+
 public class MineSweeperView extends View {
     private Context context;
 
@@ -29,7 +31,9 @@ public class MineSweeperView extends View {
 
     private GameState state;
     private int cellsLeft;
-    private OnGameStateChangeListener onGameStateChangeListener;
+    private ArrayList<OnGameStateChangeListener> onGameStateChangeListeners = new ArrayList<>();
+
+    private GameAI gameAI;
 
     // default constructor for the class that takes in a context
     public MineSweeperView(Context c) {
@@ -82,8 +86,8 @@ public class MineSweeperView extends View {
         strokePaint.setStrokeWidth(10);
         strokePaint.setColor(Color.BLACK);
 
-        // Initialize the game board
-        initializeGrid();
+        gameAI = new GameAI(this); // Initialize the AI
+        initializeGrid(); // Initialize the game board
     }
 
     @Override
@@ -193,20 +197,39 @@ public class MineSweeperView extends View {
                 int cellX = (int) event.getX() / cellWidth;
                 int cellY = (int) event.getY() / cellHeight;
 
-                if (cellX < 0 || cellX >= gridSize || cellY < 0 || cellY >= gridSize) return true;
-
-                if (mode == MineSweeperMode.Marking) markCell(cellX, cellY);
-                else uncoverCell(cellX, cellY);
-
-                if (cellsLeft <= 0) changeState(GameState.Won);
-
-                invalidate();
+                touchCell(cellX, cellY);
                 return true;
             }
         }
 
         // If we have not handled the touch event, ask the system to do it
         return super.onTouchEvent(event);
+    }
+
+    public void touchCell(int cellX, int cellY) {
+        if (cellX < 0 || cellX >= gridSize || cellY < 0 || cellY >= gridSize) return;
+
+        if (mode == MineSweeperMode.Marking) markCell(cellX, cellY);
+        else uncoverCell(cellX, cellY);
+
+        if (cellsLeft <= 0) changeState(GameState.Won);
+
+        invalidate();
+    }
+
+    private void markCell(int cellX, int cellY) {
+        if (cells[cellX][cellY].has(Cell.UNCOVERED)) return;
+
+        cells[cellX][cellY].toggleMark();
+
+        if (cells[cellX][cellY].has(Cell.MARKED)) {
+            if (cells[cellX][cellY].has(Cell.MINEFIELD)) cellsLeft--;
+            markedCount++;
+        } else {
+            if (cells[cellX][cellY].has(Cell.MINEFIELD)) cellsLeft++;
+            markedCount--;
+        }
+        onMarkedCountChangeListener.onMarkedCountChange(markedCount);
     }
 
     private void uncoverCell(int cellX, int cellY) {
@@ -233,24 +256,16 @@ public class MineSweeperView extends View {
         }
     }
 
-    private void markCell(int cellX, int cellY) {
-        if (cells[cellX][cellY].has(Cell.UNCOVERED)) return;
-
-        cells[cellX][cellY].toggleMark();
-
-        if (cells[cellX][cellY].has(Cell.MARKED)) {
-            if (cells[cellX][cellY].has(Cell.MINEFIELD)) cellsLeft--;
-            markedCount++;
-        } else {
-            if (cells[cellX][cellY].has(Cell.MINEFIELD)) cellsLeft++;
-            markedCount--;
-        }
-        onMarkedCountChangeListener.onMarkedCountChange(markedCount);
+    public GameState getState() {
+        return state;
     }
 
     private void changeState(GameState newState) {
-        state = newState;
-        onGameStateChangeListener.onGameStateChange(state);
+        state = newState; // Change State
+
+        // Trigger event
+        for (OnGameStateChangeListener listener : onGameStateChangeListeners)
+            listener.onGameStateChange(state);
     }
 
     public void initializeGrid() {
@@ -291,6 +306,7 @@ public class MineSweeperView extends View {
         mode = MineSweeperMode.Uncovering;
         state = GameState.Playing;
         cellsLeft = gridSize * gridSize;
+        gameAI.reset();
 
         // Trigger events
         if (onModeChangeListener != null) onModeChangeListener.onModeChange(mode);
@@ -302,6 +318,14 @@ public class MineSweeperView extends View {
         invalidate(); // Redraw
     }
 
+    public Cell[][] getCells() {
+        return cells;
+    }
+
+    public int getGridSize() {
+        return gridSize;
+    }
+
     public void setMarkedCountChangeListener(OnMarkedCountChangeListener listener) {
         onMarkedCountChangeListener = listener;
     }
@@ -310,10 +334,14 @@ public class MineSweeperView extends View {
         onModeChangeListener = listener;
     }
 
+    public void setMode(MineSweeperMode mode) {
+        this.mode = mode;
+        onModeChangeListener.onModeChange(this.mode); // Trigger event
+    }
+
     public void switchMode() {
-        mode = mode == MineSweeperMode.Uncovering
-                ? MineSweeperMode.Marking : MineSweeperMode.Uncovering;
-        onModeChangeListener.onModeChange(mode);
+        setMode(mode == MineSweeperMode.Uncovering
+                ? MineSweeperMode.Marking : MineSweeperMode.Uncovering);
     }
 
     public MineSweeperMode getMode() {
@@ -329,7 +357,19 @@ public class MineSweeperView extends View {
     }
 
     public void setGameStateChangeListener(OnGameStateChangeListener listener) {
-        onGameStateChangeListener = listener;
+        onGameStateChangeListeners.add(listener);
+    }
+
+    public void setAIModeChangeListener(OnModeChangeListener listener) {
+        gameAI.setModeChangeListener(listener);
+    }
+
+    public void switchAIMode() {
+        gameAI.switchMode();
+    }
+
+    public GameAIMode getAIMode() {
+        return gameAI.getMode();
     }
 
     private void drawCenterText(Canvas canvas, String text, Rect rect, Paint paint) {

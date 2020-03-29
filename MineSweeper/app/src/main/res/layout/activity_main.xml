@@ -20,8 +20,8 @@
             android:id="@+id/button_mode"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="50dp"
-            android:text="H" />
+            android:layout_marginEnd="30dp"
+            android:text="@string/button_mode_uncover" />
 
         <Button
             android:id="@+id/button_reset"
@@ -30,6 +30,14 @@
             android:text="@string/button_reset" />
 
     </LinearLayout>
+
+    <Button
+        android:id="@+id/button_ai"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:layout_gravity="center"
+        android:text="@string/button_ai_disabled" />
 
     <TextView
         android:id="@+id/text_total_mines"

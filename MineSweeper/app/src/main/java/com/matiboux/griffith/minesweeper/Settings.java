@@ -69,6 +69,7 @@ public class Settings extends AppCompatActivity {
                 Configuration config = resources.getConfiguration();
                 config.locale = new Locale(locale);
                 resources.updateConfiguration(config, displayMetrics);
+                //activity.applyOverrideConfiguration(config);
 
                 // Finish the activity
                 activity.setResult(RESULT_OK);
