@@ -3,6 +3,7 @@ package com.matiboux.griffith.minesweeper;
 import android.util.Pair;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -78,28 +79,46 @@ public class GameAI {
                     int digit = cells[cellX][cellY].getDigit();
                     if (digit <= 0) continue;
 
-                    int coveredCount = 0;
+                    List<Pair<Integer, Integer>> coveredCells = new ArrayList<>();
+                    List<Pair<Integer, List<Pair<Integer, Integer>>>> neighborCoveredCellsList = new ArrayList<>();
                     int markedCount = 0;
-
-                    ArrayList<Pair<Integer, Integer>> coveredCells = new ArrayList<>();
 
                     int minX = Math.max(0, cellX - 1);
                     int maxX = Math.min(gridSize, cellX + 2);
                     int minY = Math.max(0, cellY - 1);
                     int maxY = Math.min(gridSize, cellY + 2);
 
-                    for (int i = minX; i < maxX; i++) {
+                    for (int i = minX; i < maxX; i++)
                         for (int j = minY; j < maxY; j++) {
-                            if (cells[i][j].has(Cell.MARKED)) {
-                                //if (markedCount >= digit) break zoneOuterFor; // Finished zone
+                            if (cells[i][j].has(Cell.MARKED))
                                 markedCount++;
-                            } else if (!cells[i][j].has(Cell.UNCOVERED)) {
-                                //if (coveredCount >= digit) continue gridInnerFor; // Invalid zone
-                                coveredCount++;
+                            else if (!cells[i][j].has(Cell.UNCOVERED))
                                 coveredCells.add(new Pair<>(i, j));
+                            else if(i != cellX || j != cellY) {
+                                int marksLeft = cells[i][j].getDigit();
+                                if (marksLeft <= 0) continue;
+
+                                List<Pair<Integer, Integer>> neighborCoveredCells = new ArrayList<>();
+                                int neighborMarkedCount = 0;
+                                //int neighborCoveredCount = 0;
+
+                                int minI = Math.max(0, i - 1);
+                                int maxI = Math.min(gridSize, i + 2);
+                                int minJ = Math.max(0, j - 1);
+                                int maxJ = Math.min(gridSize, j + 2);
+
+                                for (int x = minI; x < maxI; x++)
+                                    for (int y = minJ; y < maxJ; y++) {
+                                        if (cells[x][y].has(Cell.MARKED))
+                                            neighborMarkedCount++;
+                                        else if (!cells[x][y].has(Cell.UNCOVERED))
+                                            neighborCoveredCells.add(new Pair<>(x, y));
+                                    }
+
+                                marksLeft -= neighborMarkedCount;
+                                neighborCoveredCellsList.add(new Pair<>(marksLeft, neighborCoveredCells));
                             }
                         }
-                    }
 
                     if (coveredCells.isEmpty()) continue;
 
@@ -111,7 +130,46 @@ public class GameAI {
                         touchCell(pair.first, pair.second);
                         return;
                     }
-                    if (coveredCount == digit - markedCount) {
+                    if (coveredCells.size() == digit - markedCount) {
+                        // The remaining cells in this zone should be marked
+                        touchCell(pair.first, pair.second, MineSweeperMode.Marking);
+                        return;
+                    }
+
+                    System.out.println("neighbors of " + cellX + ", " + cellY + ": " + neighborCoveredCellsList.size());
+                    for (Pair<Integer, List<Pair<Integer, Integer>>> neighborInfo : neighborCoveredCellsList)
+                        System.out.print(" " + neighborInfo.first);
+                    System.out.println();
+
+                    for (Pair<Integer, List<Pair<Integer, Integer>>> neighborInfo : neighborCoveredCellsList) {
+                        List<Pair<Integer, Integer>> neighborCoveredCells = neighborInfo.second;
+
+                        int i;
+                        int size = neighborCoveredCells.size();
+                        System.out.print(size);
+                        for (i = 0; i < size; i++)
+                            if (!coveredCells.contains(neighborCoveredCells.get(i))) break;
+                        if (i < size) continue; // Doesn't contain all neighbor's covered cells
+
+                        System.out.println("neighbor info " + neighborInfo.first);
+
+                        for (i = 0; i < size; i++)
+                            coveredCells.remove(neighborCoveredCells.get(i));
+
+                        markedCount += neighborInfo.first; // Number of the neighbour cell's unmarked mines
+                    }
+
+                    if (coveredCells.isEmpty()) continue;
+
+                    pair = coveredCells.get(0);
+
+                    if (markedCount == digit) {
+                        // This zone is finished
+                        // Uncover remaining cells of this zone
+                        touchCell(pair.first, pair.second);
+                        return;
+                    }
+                    if (coveredCells.size() == digit - markedCount) {
                         // The remaining cells in this zone should be marked
                         touchCell(pair.first, pair.second, MineSweeperMode.Marking);
                         return;
@@ -119,7 +177,7 @@ public class GameAI {
                 }
             }
 
-            touchCell(-1, -1);
+            touchCell(-1, -1); // Random move
         }
 
         void touchCell(int cellX, int cellY, MineSweeperMode mode) {
