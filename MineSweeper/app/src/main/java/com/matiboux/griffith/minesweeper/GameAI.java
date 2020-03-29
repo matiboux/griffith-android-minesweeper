@@ -73,9 +73,9 @@ public class GameAI {
 
             for (int cellX = 0; cellX < gridSize; cellX++) {
                 for (int cellY = 0; cellY < gridSize; cellY++) {
-                    if (!cells[cellX][cellX].has(Cell.UNCOVERED)) continue;
+                    if (!cells[cellX][cellY].has(Cell.UNCOVERED)) continue;
 
-                    int digit = cells[cellX][cellX].getDigit();
+                    int digit = cells[cellX][cellY].getDigit();
                     if (digit <= 0) continue;
 
                     int coveredCount = 0;
@@ -85,8 +85,8 @@ public class GameAI {
 
                     int minX = Math.max(0, cellX - 1);
                     int maxX = Math.min(gridSize, cellX + 2);
-                    int minY = Math.max(0, cellX - 1);
-                    int maxY = Math.min(gridSize, cellX + 2);
+                    int minY = Math.max(0, cellY - 1);
+                    int maxY = Math.min(gridSize, cellY + 2);
 
                     for (int i = minX; i < maxX; i++) {
                         for (int j = minY; j < maxY; j++) {
