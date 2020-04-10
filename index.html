@@ -1,0 +1,67 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>Cover Sheet</title>
+	<link rel="stylesheet" href="https://stackedit.io/style.css" />
+	<style>
+	body { font-family: Roboto; }
+	p { margin-top: 0 }
+	.page-break { page-break-before: always; }
+	pre > code { white-space: pre-wrap }
+	li { page-break-inside: avoid; }
+	</style>
+</head>
+
+<body class="stackedit">
+	<div class="stackedit__html">
+
+<div style="display: flex; align-items: center">
+	<img src="./images/icon.png" style="max-width: 100px; margin-right: 1em" />
+	<h1 id="minesweeper-cover-sheet" style="flex-grow: 1">MineSweeper Cover Sheet</h1>
+</div>
+<p>This is a project assignment for the <em>Mobile Development</em> module.<br>
+The application was made by <strong>Mathieu GUÉRIN</strong> (3026954).</p>
+
+<p>Open-source repository: <a href="https://github.com/matiboux/griffith-android-minesweeper">github.com/matiboux/griffith-android-minesweeper</a> (public since after the deadline: April 12, 2020).<br>
+Play Store page: <a href="https://play.google.com/store/apps/details?id=com.matiboux.griffith.minesweeper">MineSweeper</a>.</p>
+
+<h2>Table of contents</h2>
+
+<ul>
+<li><a href="#the-user-interface">The user interface</a></li>
+<li><a href="#bonus-the-ai">Bonus: The AI</a></li>
+</ul>
+
+<h2 id="the-user-interface">The user interface</h2>
+<p>The application is a minesweeper game with a 10×10 game board.</p>
+<p>The user interface shows a game board, which can be interacted with by touch, information about the ongoing game and three buttons:</p>
+<ul>
+<li>One to switch between <code>Uncover Mode</code> and <code>Marking Mode</code>, which will define the behavior of interactions with the game board.</li>
+<li>One for resetting the game and the board.</li>
+<li>One for enabling the AI.</li>
+</ul>
+
+<div class="page-break"></div>
+<h2 id="bonus-the-ai">Bonus: The AI</h2>
+<p>As a bonus, an AI was implemented in the application to play on its own.</p>
+<p>When enabled, it will try to figure out a move to make and make one twice every second. If the AI does not know what to do, it will make a random move. Eventually it will lose on a random move, or win the game.</p>
+<p>The strength of the AI is that it is capable of looking at one uncovered cell and compare its situation with its uncovered neighbor cells.</p>
+<p>For example:</p>
+<p><img src="./images/neighbor-implication.png" style="max-width: 30%" /></p>
+<!-- <div style="display: flex; align-items: flex-start"> -->
+	<!-- <img src="./images/neighbor-implication.png" style="max-width: 40%; margin-right: 1em" /> -->
+	<!-- <div> -->
+		<p>The AI scans uncovered cells from left to right and top to bottom.<br>
+		In the situation above, the AI would start by looking at the top <span class="katex--inline"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><menclose notation="box"><mtext>1</mtext></menclose></mrow><annotation encoding="application/x-tex">\fbox 1</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height: 1.32444em; vertical-align: -0.34em;"></span><span class="mord"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height: 0.98444em;"><span class="" style="top: -3.32444em;"><span class="pstrut" style="height: 3.32444em;"></span><span class="mord boxpad">1</span></span><span class="" style="top: -2.98444em;"><span class="pstrut" style="height: 3.32444em;"></span><span class="stretchy fbox" style="height: 1.32444em;"></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height: 0.34em;"><span class=""></span></span></span></span></span></span></span></span></span> and would not be able to decide on making a move.<br>
+		Then, it would look at the next uncovered cell, the second <span class="katex--inline"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><menclose notation="box"><mtext>1</mtext></menclose></mrow><annotation encoding="application/x-tex">\fbox 1</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height: 1.32444em; vertical-align: -0.34em;"></span><span class="mord"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height: 0.98444em;"><span class="" style="top: -3.32444em;"><span class="pstrut" style="height: 3.32444em;"></span><span class="mord boxpad">1</span></span><span class="" style="top: -2.98444em;"><span class="pstrut" style="height: 3.32444em;"></span><span class="stretchy fbox" style="height: 1.32444em;"></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height: 0.34em;"><span class=""></span></span></span></span></span></span></span></span></span> and find that it doesn’t show any obvious move to make. However, when comparing its covered cells to those of its neighbors, the AI will find that the covered cell on the left of <span class="katex--inline"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><menclose notation="box"><mtext>2</mtext></menclose></mrow><annotation encoding="application/x-tex">\fbox 2</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height: 1.32444em; vertical-align: -0.34em;"></span><span class="mord"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height: 0.98444em;"><span class="" style="top: -3.32444em;"><span class="pstrut" style="height: 3.32444em;"></span><span class="mord boxpad">2</span></span><span class="" style="top: -2.98444em;"><span class="pstrut" style="height: 3.32444em;"></span><span class="stretchy fbox" style="height: 1.32444em;"></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height: 0.34em;"><span class=""></span></span></span></span></span></span></span></span></span> cannot be a mine because of an implication from the top <span class="katex--inline"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><menclose notation="box"><mtext>1</mtext></menclose></mrow><annotation encoding="application/x-tex">\fbox 1</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height: 1.32444em; vertical-align: -0.34em;"></span><span class="mord"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height: 0.98444em;"><span class="" style="top: -3.32444em;"><span class="pstrut" style="height: 3.32444em;"></span><span class="mord boxpad">1</span></span><span class="" style="top: -2.98444em;"><span class="pstrut" style="height: 3.32444em;"></span><span class="stretchy fbox" style="height: 1.32444em;"></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height: 0.34em;"><span class=""></span></span></span></span></span></span></span></span></span>.<br>
+		Therefore, the AI will uncover the covered cell on the left of <span class="katex--inline"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><menclose notation="box"><mtext>2</mtext></menclose></mrow><annotation encoding="application/x-tex">\fbox 2</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height: 1.32444em; vertical-align: -0.34em;"></span><span class="mord"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height: 0.98444em;"><span class="" style="top: -3.32444em;"><span class="pstrut" style="height: 3.32444em;"></span><span class="mord boxpad">2</span></span><span class="" style="top: -2.98444em;"><span class="pstrut" style="height: 3.32444em;"></span><span class="stretchy fbox" style="height: 1.32444em;"></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height: 0.34em;"><span class=""></span></span></span></span></span></span></span></span></span> on this move.</p>
+	<!-- </div> -->
+<!-- </div> -->
+
+	</div>
+</body>
+
+</html>
