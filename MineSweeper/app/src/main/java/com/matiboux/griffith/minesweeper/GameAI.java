@@ -13,9 +13,6 @@ public class GameAI {
     private MineSweeperView mineSweeperView;
     private Timer timer;
 
-    private int lastX = -1;
-    private int lastY = -1;
-
     private GameAIMode mode = GameAIMode.Disabled;
     private OnModeChangeListener onModeChangeListener;
 
@@ -25,15 +22,9 @@ public class GameAI {
         this.mineSweeperView.setGameStateChangeListener(new OnGameStateChangeListener() {
             @Override
             public void onGameStateChange(GameState state) {
-                if (state == GameState.Playing) return;
-                reset();
+                if (state != GameState.Playing) disable();
             }
         });
-    }
-
-    public void reset() {
-        lastX = lastY = -1;
-        disable();
     }
 
     public void disable() {
@@ -70,8 +61,6 @@ public class GameAI {
             cells = mineSweeperView.getCells();
             gridSize = mineSweeperView.getGridSize();
 
-            //lastX = lastY = -1;
-
             for (int cellX = 0; cellX < gridSize; cellX++) {
                 for (int cellY = 0; cellY < gridSize; cellY++) {
                     if (!cells[cellX][cellY].has(Cell.UNCOVERED)) continue;
@@ -94,7 +83,7 @@ public class GameAI {
                                 markedCount++;
                             else if (!cells[i][j].has(Cell.UNCOVERED))
                                 coveredCells.add(new Pair<>(i, j));
-                            else if(i != cellX || j != cellY) {
+                            else if (i != cellX || j != cellY) {
                                 int marksLeft = cells[i][j].getDigit();
                                 if (marksLeft <= 0) continue;
 
@@ -200,8 +189,6 @@ public class GameAI {
             }
 
             // Set last cell coordinates
-            lastX = cellX;
-            lastY = cellY;
 
             mineSweeperView.touchCell(cellX, cellY);
         }

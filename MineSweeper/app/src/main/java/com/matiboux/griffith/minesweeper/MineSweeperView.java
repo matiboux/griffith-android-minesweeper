@@ -306,7 +306,7 @@ public class MineSweeperView extends View {
         mode = MineSweeperMode.Uncovering;
         state = GameState.Playing;
         cellsLeft = gridSize * gridSize;
-        gameAI.reset();
+        gameAI.disable();
 
         // Trigger events
         if (onModeChangeListener != null) onModeChangeListener.onModeChange(mode);
