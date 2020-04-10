@@ -125,22 +125,14 @@ public class GameAI {
                         return;
                     }
 
-                    System.out.println("neighbors of " + cellX + ", " + cellY + ": " + neighborCoveredCellsList.size());
-                    for (Pair<Integer, List<Pair<Integer, Integer>>> neighborInfo : neighborCoveredCellsList)
-                        System.out.print(" " + neighborInfo.first);
-                    System.out.println();
-
                     for (Pair<Integer, List<Pair<Integer, Integer>>> neighborInfo : neighborCoveredCellsList) {
                         List<Pair<Integer, Integer>> neighborCoveredCells = neighborInfo.second;
 
                         int i;
                         int size = neighborCoveredCells.size();
-                        System.out.print(size);
                         for (i = 0; i < size; i++)
                             if (!coveredCells.contains(neighborCoveredCells.get(i))) break;
                         if (i < size) continue; // Doesn't contain all neighbor's covered cells
-
-                        System.out.println("neighbor info " + neighborInfo.first);
 
                         for (i = 0; i < size; i++)
                             coveredCells.remove(neighborCoveredCells.get(i));
@@ -185,7 +177,7 @@ public class GameAI {
                         || cells[cellX][cellY].has(Cell.MARKED));
 
                 mineSweeperView.setMode(MineSweeperMode.Uncovering);
-                System.out.println("random touch");
+                // Random touch
             }
 
             // Set last cell coordinates
